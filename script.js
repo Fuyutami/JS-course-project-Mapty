@@ -11,6 +11,8 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
+let map, mapEvent;
+
 
 if(navigator.geolocation)
 navigator.geolocation.getCurrentPosition(function (position) {
@@ -18,15 +20,31 @@ navigator.geolocation.getCurrentPosition(function (position) {
     const {longitude} = position.coords
     const coords = [latitude, longitude]
     
-    const map = L.map('map').setView(coords, 13); // we need HTML element with an ID of "map"
+    map = L.map('map').setView(coords, 13); // we need HTML element with an ID of "map"
 
     L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    
-    map.on('click', function (mapEvent) {
-        console.log(mapEvent)
+    // Handling clicks on map
+    map.on('click', function (mapE) {
+        mapEvent = mapE
+        form.classList.remove('hidden')
+        inputDistance.focus()
+    })
+
+}, function () {
+    alert('Could not get your position')
+})
+
+
+form.addEventListener('submit', function (e) {
+    e.preventDefault()
+
+    // Clear input fields
+    inputDistance.value = inputDuration.value = inputCadence.value = inputElevation.value = ''
+    // Display marker
+    console.log(mapEvent)
         const {lat, lng} = mapEvent.latlng
 
         L.marker([lat, lng], 'riseOnHover').addTo(map).bindPopup(L.popup({
@@ -36,8 +54,10 @@ navigator.geolocation.getCurrentPosition(function (position) {
             closeOnClick: false,
             className: 'running-popup',
         })).setPopupContent('Workout').openPopup();
-    })
+})
 
-}, function () {
-    alert('Could not get your position')
+inputType.addEventListener('change', function () {
+    inputElevation.closest('.form__row').classList.toggle('form__row--hidden')
+    inputCadence.closest('.form__row').classList.toggle('form__row--hidden')
+
 })
